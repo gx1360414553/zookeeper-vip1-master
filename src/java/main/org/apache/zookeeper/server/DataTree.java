@@ -533,7 +533,7 @@ public class DataTree {
           this.updateBytes(lastPrefix, (data == null ? 0 : data.length)
               - (lastdata == null ? 0 : lastdata.length));
         }
-        //触发事件
+        //服务端触发事件
         dataWatches.triggerWatch(path, EventType.NodeDataChanged);
         return s;
     }
@@ -744,6 +744,7 @@ public class DataTree {
                             setACLTxn.getVersion());
                     break;
                 case OpCode.closeSession:
+                    //杀掉session,清除临时节点
                     killSession(header.getClientId(), header.getZxid());
                     break;
                 case OpCode.error:

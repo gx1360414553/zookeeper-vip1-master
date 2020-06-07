@@ -147,7 +147,7 @@ public class ZooKeeper {
         }
 
         /* (non-Javadoc)
-         * @see org.apache.zookeeper.ClientWatchManager#materialize(Event.KeeperState, 
+         * @see org.apache.zookeeper.ClientWatchManager#materialize(Event.KeeperState,
          *                                                        Event.EventType, java.lang.String)
          */
         // 这个方法负责获取一个节点绑定了哪些watcher，并且负责移除，先移除然后返回
@@ -195,7 +195,7 @@ public class ZooKeeper {
             case NodeDataChanged:
             case NodeCreated:
                 synchronized (dataWatches) {
-                    // 这里负责移除
+                    // 这里负责移除加入的watch
                     addTo(dataWatches.remove(clientPath), result);
                 }
                 synchronized (existWatches) {
@@ -1004,7 +1004,7 @@ public class ZooKeeper {
         }
 
         List<OpResult> results = response.getResultList();
-        
+
         ErrorResult fatalError = null;
         for (OpResult result : results) {
             if (result instanceof ErrorResult && ((ErrorResult)result).getErr() != KeeperException.Code.OK.intValue()) {
@@ -1626,7 +1626,7 @@ public class ZooKeeper {
      * if no node with the given path exists.
      *
      * @since 3.3.0
-     * 
+     *
      * @param path
      * @param watcher explicit watcher
      * @param stat stat of the znode designated by path
@@ -1682,7 +1682,7 @@ public class ZooKeeper {
      * if no node with the given path exists.
      *
      * @since 3.3.0
-     * 
+     *
      * @param path
      * @param watch
      * @param stat stat of the znode designated by path
@@ -1701,7 +1701,7 @@ public class ZooKeeper {
      * The asynchronous version of getChildren.
      *
      * @since 3.3.0
-     * 
+     *
      * @see #getChildren(String, Watcher, Stat)
      */
     public void getChildren(final String path, Watcher watcher,
@@ -1732,7 +1732,7 @@ public class ZooKeeper {
      * The asynchronous version of getChildren.
      *
      * @since 3.3.0
-     * 
+     *
      * @see #getChildren(String, boolean, Stat)
      */
     public void getChildren(String path, boolean watch, Children2Callback cb,
@@ -1770,10 +1770,10 @@ public class ZooKeeper {
     /**
      * String representation of this ZooKeeper client. Suitable for things
      * like logging.
-     * 
+     *
      * Do NOT count on the format of this string, it may change without
      * warning.
-     * 
+     *
      * @since 3.3.0
      */
     @Override
@@ -1788,16 +1788,16 @@ public class ZooKeeper {
 
     /*
      * Methods to aid in testing follow.
-     * 
+     *
      * THESE METHODS ARE EXPECTED TO BE USED FOR TESTING ONLY!!!
      */
 
     /**
      * Wait up to wait milliseconds for the underlying threads to shutdown.
      * THIS METHOD IS EXPECTED TO BE USED FOR TESTING ONLY!!!
-     * 
+     *
      * @since 3.3.0
-     * 
+     *
      * @param wait max wait in milliseconds
      * @return true iff all threads are shutdown, otw false
      */
@@ -1819,7 +1819,7 @@ public class ZooKeeper {
      * THIS METHOD IS EXPECTED TO BE USED FOR TESTING ONLY!!!
      *
      * @since 3.3.0
-     * 
+     *
      * @return ip address of the remote side of the connection or null if
      *         not connected
      */
@@ -1827,12 +1827,12 @@ public class ZooKeeper {
         return cnxn.sendThread.getClientCnxnSocket().getRemoteSocketAddress();
     }
 
-    /** 
+    /**
      * Returns the local address to which the socket is bound.
      * THIS METHOD IS EXPECTED TO BE USED FOR TESTING ONLY!!!
      *
      * @since 3.3.0
-     * 
+     *
      * @return ip address of the remote side of the connection or null if
      *         not connected
      */

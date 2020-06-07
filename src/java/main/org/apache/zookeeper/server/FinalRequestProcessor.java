@@ -396,6 +396,7 @@ public class FinalRequestProcessor implements RequestProcessor {
             // 发送命令处理完成后的结果，默认是NIOServerCnxn
             cnxn.sendResponse(hdr, rsp, "response");
             if (closeSession) {
+                // 关闭session响应给客户端
                 cnxn.sendCloseSession();
             }
         } catch (IOException e) {

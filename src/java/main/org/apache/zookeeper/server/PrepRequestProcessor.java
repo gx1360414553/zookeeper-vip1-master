@@ -274,6 +274,14 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         }
     }
 
+    /**
+     *
+     * @param zks
+     * @param acl 当前节点存在的权限规则
+     * @param perm 当前操作需要的权限
+     * @param ids
+     * @throws KeeperException.NoAuthException
+     */
     static void checkACL(ZooKeeperServer zks, List<ACL> acl, int perm,
             List<Id> ids) throws KeeperException.NoAuthException {
         if (skipACL) {
@@ -289,6 +297,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         }
         for (ACL a : acl) {
             Id id = a.getId();
+            //二进制使用很巧妙的判断
             if ((a.getPerms() & perm) != 0) {
                 if (id.getScheme().equals("world")
                         && id.getId().equals("anyone")) {
