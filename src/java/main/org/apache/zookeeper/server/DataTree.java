@@ -388,11 +388,11 @@ public class DataTree {
             if (children.contains(childName)) {
                 throw new KeeperException.NodeExistsException();
             }
-            
+
             if (parentCVersion == -1) {
                 parentCVersion = parent.stat.getCversion();
                 parentCVersion++;
-            }    
+            }
             parent.stat.setCversion(parentCVersion);
             parent.stat.setPzxid(zxid);
             Long longval = aclCache.convertAcls(acl);
@@ -533,6 +533,7 @@ public class DataTree {
           this.updateBytes(lastPrefix, (data == null ? 0 : data.length)
               - (lastdata == null ? 0 : lastdata.length));
         }
+        //触发事件
         dataWatches.triggerWatch(path, EventType.NodeDataChanged);
         return s;
     }
@@ -668,7 +669,7 @@ public class DataTree {
         public Stat stat;
 
         public List<ProcessTxnResult> multiResult;
-        
+
         /**
          * Equality is defined as the clientId and the cxid being the same. This
          * allows us to use hash tables to track completion of transactions.
@@ -792,9 +793,9 @@ public class DataTree {
                         assert(record != null);
 
                         ByteBufferInputStream.byteBuffer2Record(bb, record);
-                       
+
                         if (failed && subtxn.getType() != OpCode.error){
-                            int ec = post_failed ? Code.RUNTIMEINCONSISTENCY.intValue() 
+                            int ec = post_failed ? Code.RUNTIMEINCONSISTENCY.intValue()
                                                  : Code.OK.intValue();
 
                             subtxn.setType(OpCode.error);
@@ -806,7 +807,7 @@ public class DataTree {
                         }
 
                         TxnHeader subHdr = new TxnHeader(header.getClientId(), header.getCxid(),
-                                                         header.getZxid(), header.getTime(), 
+                                                         header.getZxid(), header.getTime(),
                                                          subtxn.getType());
                         ProcessTxnResult subRc = processTxn(subHdr, record);
                         rc.multiResult.add(subRc);

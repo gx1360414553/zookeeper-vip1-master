@@ -79,7 +79,7 @@ public class FinalRequestProcessor implements RequestProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(FinalRequestProcessor.class);
 
     ZooKeeperServer zks;
-
+    //更新内容触发事件
     public FinalRequestProcessor(ZooKeeperServer zks) {
         this.zks = zks;
     }
@@ -302,8 +302,8 @@ public class FinalRequestProcessor implements RequestProcessor {
                 request.request.rewind();
                 ByteBufferInputStream.byteBuffer2Record(request.request, setWatches);
                 long relativeZxid = setWatches.getRelativeZxid();
-                zks.getZKDatabase().setWatches(relativeZxid, 
-                        setWatches.getDataWatches(), 
+                zks.getZKDatabase().setWatches(relativeZxid,
+                        setWatches.getDataWatches(),
                         setWatches.getExistWatches(),
                         setWatches.getChildWatches(), cnxn);
                 break;
@@ -314,7 +314,7 @@ public class FinalRequestProcessor implements RequestProcessor {
                 ByteBufferInputStream.byteBuffer2Record(request.request,
                         getACLRequest);
                 Stat stat = new Stat();
-                List<ACL> acl = 
+                List<ACL> acl =
                     zks.getZKDatabase().getACL(getACLRequest.getPath(), stat);
                 rsp = new GetACLResponse(acl, stat);
                 break;
@@ -362,7 +362,7 @@ public class FinalRequestProcessor implements RequestProcessor {
             // down the connection otw ZOOKEEPER-710 might happen
             // ie client on slow follower starts to renew session, fails
             // before this completes, then tries the fast follower (leader)
-            // and is successful, however the initial renew is then 
+            // and is successful, however the initial renew is then
             // successfully fwd/processed by the leader and as a result
             // the client and leader disagree on where the client is most
             // recently attached (and therefore invalid SESSION MOVED generated)

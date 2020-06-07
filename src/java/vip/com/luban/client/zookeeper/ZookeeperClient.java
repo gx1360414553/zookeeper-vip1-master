@@ -36,7 +36,7 @@ public class ZookeeperClient {
             public void process(WatchedEvent event) {
                 System.out.println("get绑定的watch");
             }
-        }, null);
+        }, new Stat());
 
 
 //        System.out.println(new String(client.getData("/test", true, null))+"==========");

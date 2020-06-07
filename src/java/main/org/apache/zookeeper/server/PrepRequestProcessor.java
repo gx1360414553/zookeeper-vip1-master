@@ -185,7 +185,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
 
     /**
      * Grab current pending change records for each op in a multi-op.
-     * 
+     *
      * This is used inside MultiOp error code path to rollback in the event
      * of a failed multi-op.
      *
@@ -297,7 +297,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 AuthenticationProvider ap = ProviderRegistry.getProvider(id
                         .getScheme());
                 if (ap != null) {
-                    for (Id authId : ids) {                        
+                    for (Id authId : ids) {
                         if (authId.getScheme().equals(id.getScheme())
                                 && ap.matches(authId.getId(), id.getId())) {
                             return;
@@ -326,9 +326,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                                     Time.currentWallTime(), type);
 
         switch (type) {
-            case OpCode.create:                
+            case OpCode.create:
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
-                CreateRequest createRequest = (CreateRequest)record;   
+                CreateRequest createRequest = (CreateRequest)record;
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, createRequest);
                 String path = createRequest.getPath();
@@ -345,7 +345,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 String parentPath = path.substring(0, lastSlash);
                 // 获取父节点的最后一次修改记录
                 ChangeRecord parentRecord = getRecordForPath(parentPath);
-
+                //验证acl
                 checkACL(zks, parentRecord.acl, ZooDefs.Perms.CREATE,
                         request.authInfo);
                 // 表示对此znode的子节点进行的更改次数。
@@ -545,7 +545,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         // request.type + " id = 0x" + Long.toHexString(request.sessionId));
         request.hdr = null;
         request.txn = null;
-        
+
         try {
             switch (request.type) {
                 case OpCode.create:
@@ -554,19 +554,19 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 pRequest2Txn(request.type, zks.getNextZxid(), request, createRequest, true);
                 break;
             case OpCode.delete:
-                DeleteRequest deleteRequest = new DeleteRequest();               
+                DeleteRequest deleteRequest = new DeleteRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, deleteRequest, true);
                 break;
             case OpCode.setData:
-                SetDataRequest setDataRequest = new SetDataRequest();                
+                SetDataRequest setDataRequest = new SetDataRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, setDataRequest, true);
                 break;
             case OpCode.setACL:
-                SetACLRequest setAclRequest = new SetACLRequest();                
+                SetACLRequest setAclRequest = new SetACLRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, setAclRequest, true);
                 break;
             case OpCode.check:
-                CheckVersionRequest checkRequest = new CheckVersionRequest();              
+                CheckVersionRequest checkRequest = new CheckVersionRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, checkRequest, true);
                 break;
             case OpCode.multi:
@@ -597,8 +597,8 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     if (ke != null) {
                         request.hdr.setType(OpCode.error);
                         request.txn = new ErrorTxn(Code.RUNTIMEINCONSISTENCY.intValue());
-                    } 
-                    
+                    }
+
                     /* Prep the request and convert to a Txn */
                     else {
                         try {
@@ -620,7 +620,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     }
 
                     //FIXME: I don't want to have to serialize it here and then
-                    //       immediately deserialize in next processor. But I'm 
+                    //       immediately deserialize in next processor. But I'm
                     //       not sure how else to get the txn stored into our list.
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     BinaryOutputArchive boa = BinaryOutputArchive.getArchive(baos);
@@ -634,7 +634,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 request.hdr = new TxnHeader(request.sessionId, request.cxid, zxid,
                         Time.currentWallTime(), request.type);
                 request.txn = new MultiTxn(txns);
-                
+
                 break;
 
             //create/close session don't require request record
@@ -642,7 +642,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.closeSession:
                 pRequest2Txn(request.type, zks.getNextZxid(), request, null, true);
                 break;
- 
+
             //All the rest don't need to create a Txn - just verify session 非事务请求
             case OpCode.sync:
             case OpCode.exists:

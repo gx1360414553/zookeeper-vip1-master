@@ -65,7 +65,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
      * The number of log entries to log before starting a snapshot
      */
     private static int snapCount = ZooKeeperServer.getSnapCount();
-    
+
     /**
      * The number of log entries before rolling the log, number
      * is chosen randomly
@@ -82,7 +82,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
         this.nextProcessor = nextProcessor;
         running = true;
     }
-    
+
     /**
      * used by tests to check for changing
      * snapcounts
@@ -100,19 +100,20 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
     public static int getSnapCount() {
         return snapCount;
     }
-    
+
     /**
-     * Sets the value of randRoll. This method 
+     * Sets the value of randRoll. This method
      * is here to avoid a findbugs warning for
      * setting a static variable in an instance
-     * method. 
-     * 
+     * method.
+     *
      * @param roll
      */
     private static void setRandRoll(int roll) {
         randRoll = roll;
     }
 
+    //生成快照
     @Override
     public void run() {
         try {
