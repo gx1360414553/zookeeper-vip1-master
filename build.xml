@@ -574,14 +574,14 @@ xmlns:cs="antlib:com.puppycrawl.tools.checkstyle">
         </fileset>
     	<packageset dir="${java.src.dir}">
           <include name="org/apache/**"/>
-          <exclude name="org/apache/zookeeper/server/**"/>
+          <!--<exclude name="org/apache/zookeeper/server/**"/>-->
     	</packageset>
     	<packageset dir="${src_generated.dir}">
           <include name="org/apache/**"/>
-          <exclude name="org/apache/zookeeper/proto"/>
-          <exclude name="org/apache/zookeeper/txn"/>
-          <exclude name="org/apache/zookeeper/version"/>
-          <exclude name="org/apache/zookeeper/server/**"/>
+          <!--<exclude name="org/apache/zookeeper/proto"/>-->
+          <!--<exclude name="org/apache/zookeeper/txn"/>-->
+          <!--<exclude name="org/apache/zookeeper/version"/>-->
+          <!--<exclude name="org/apache/zookeeper/server/**"/>-->
     	</packageset>
         <link href="${javadoc.link.java}"/>
         <classpath>

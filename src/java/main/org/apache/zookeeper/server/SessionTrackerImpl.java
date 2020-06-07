@@ -141,6 +141,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements Sessi
     @Override
     synchronized public void run() {
         try {
+            //session 过期判断
             while (running) {
                 currentTime = Time.currentElapsedTime();
                 if (nextExpirationTime > currentTime) {
@@ -217,7 +218,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements Sessi
         }
         if (s != null) {
             SessionSet set = sessionSets.get(s.tickTime);
-            // Session expiration has been removing the sessions   
+            // Session expiration has been removing the sessions
             if(set != null){
                 set.sessions.remove(s);
             }
