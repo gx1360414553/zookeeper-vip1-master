@@ -139,7 +139,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                 }
                 if (si != null) {
                     // track the number of records written to the log
-                    // 先持久化日志！成功了才继续下面的操作
+                    // 先持久化事务日志！成功了才继续下面的操作
                     // 一个事务日志文件会有多个请求
                     if (zks.getZKDatabase().append(si)) {
                         // 每个请求加1
@@ -147,9 +147,10 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                         //如果logCount到了一定的量，zk运行过程中会不断地接受到请求，那么这个logCount就不会断的增加，
                         // 增加到一定的数据量之后，就会先生成一个快照，然后加入到待刷新到磁盘列表中去
                         if (logCount > (snapCount / 2 + randRoll)) {
+                            //生成快照
                             setRandRoll(r.nextInt(snapCount/2)); //下一次的随机数重新选
                             // roll the log
-                            zks.getZKDatabase().rollLog(); //事务日志滚动记录到另外一个新文件
+                            zks.getZKDatabase().rollLog(); //事务日志滚动记录到另外一个新文件   fush logstream
                             // take a snapshot
                             if (snapInProcess != null && snapInProcess.isAlive()) { //正在进行快照
                                 LOG.warn("Too busy to snap, skipping");
@@ -183,7 +184,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                     }
                     // 待刷新到磁盘，
                     toFlush.add(si);
-                    // 当请求数超过1000了就会刷新到磁盘
+                    // 当一个事物请求数超过1000了就会刷新到磁盘
                     // flush方法里面也会调用nextProcessor，代表刷新到事务都持久化到磁盘之后，就调用下一个请求处理器
                     if (toFlush.size() > 1000) {
                         flush(toFlush);
@@ -203,7 +204,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
         if (toFlush.isEmpty())
             return;
 
-        zks.getZKDatabase().commit();
+        zks.getZKDatabase().commit(); //提交事务日志
         while (!toFlush.isEmpty()) {
             Request i = toFlush.remove();
             if (nextProcessor != null) {

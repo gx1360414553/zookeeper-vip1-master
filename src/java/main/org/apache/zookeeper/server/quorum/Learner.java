@@ -51,48 +51,48 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class is the superclass of two of the three main actors in a ZK
- * ensemble: Followers and Observers. Both Followers and Observers share 
- * a good deal of code which is moved into Peer to avoid duplication. 
+ * ensemble: Followers and Observers. Both Followers and Observers share
+ * a good deal of code which is moved into Peer to avoid duplication.
  */
-public class Learner {       
+public class Learner {
     static class PacketInFlight {
         TxnHeader hdr;
         Record rec;
     }
     QuorumPeer self;
     LearnerZooKeeperServer zk;
-    
+
     protected BufferedOutputStream bufferedOutput;
-    
+
     protected Socket sock;
-    
+
     /**
      * Socket getter
-     * @return 
+     * @return
      */
     public Socket getSocket() {
         return sock;
     }
-    
+
     protected InputArchive leaderIs;
-    protected OutputArchive leaderOs;  
+    protected OutputArchive leaderOs;
     /** the protocol version of the leader */
     protected int leaderProtocolVersion = 0x01;
-    
+
     protected static final Logger LOG = LoggerFactory.getLogger(Learner.class);
 
     static final private boolean nodelay = System.getProperty("follower.nodelay", "true").equals("true");
     static {
         LOG.info("TCP NoDelay set to: " + nodelay);
-    }   
-    
+    }
+
     final ConcurrentHashMap<Long, ServerCnxn> pendingRevalidations =
         new ConcurrentHashMap<Long, ServerCnxn>();
-    
+
     public int getPendingRevalidationsCount() {
         return pendingRevalidations.size();
     }
-    
+
     /**
      * validate a session for a client
      *
@@ -121,8 +121,8 @@ public class Learner {
                                      + Long.toHexString(clientId));
         }
         writePacket(qp, true);
-    }     
-    
+    }
+
     /**
      * write a packet to the leader
      *
@@ -160,7 +160,7 @@ public class Learner {
             ZooTrace.logQuorumPacket(LOG, traceMask, 'i', pp);
         }
     }
-    
+
     /**
      * send a request packet to the leader
      *
@@ -188,7 +188,7 @@ public class Learner {
                 .toByteArray(), request.authInfo);
         writePacket(qp, true);
     }
-    
+
     /**
      * Returns the address of the node we think is the leader.
      */
@@ -211,10 +211,10 @@ public class Learner {
         }
         return leaderServer;
     }
-    
+
     /**
      * Establish a connection with the Leader found by findLeader. Retries
-     * 5 times before giving up. 
+     * 5 times before giving up.
      * @param addr - the address of the Leader to connect to.
      * @throws IOException <li>if the socket connection fails on the 5th attempt</li>
      * <li>if there is an authentication failure while connecting to leader</li>
@@ -223,7 +223,7 @@ public class Learner {
      */
     protected void connectToLeader(InetSocketAddress addr, String hostname)
             throws IOException, ConnectException, InterruptedException {
-        sock = new Socket();        
+        sock = new Socket();
         sock.setSoTimeout(self.tickTime * self.initLimit);
         for (int tries = 0; tries < 5; tries++) {
             try {
@@ -250,11 +250,11 @@ public class Learner {
                 sock.getInputStream()));
         bufferedOutput = new BufferedOutputStream(sock.getOutputStream());
         leaderOs = BinaryOutputArchive.getArchive(bufferedOutput);
-    }   
-    
+    }
+
     /**
      * Once connected to the leader, perform the handshake protocol to
-     * establish a following / observing connection. 
+     * establish a following / observing connection.
      * @param pktType
      * @return the zxid the Leader sends for synchronization purposes.
      * @throws IOException
@@ -264,10 +264,10 @@ public class Learner {
          * Send follower info, including last zxid and sid
          */
     	long lastLoggedZxid = self.getLastLoggedZxid();
-        QuorumPacket qp = new QuorumPacket();                
+        QuorumPacket qp = new QuorumPacket();
         qp.setType(pktType);
         qp.setZxid(ZxidUtils.makeZxid(self.getAcceptedEpoch(), 0));
-        
+
         /*
          * Add sid to payload
          */
@@ -276,10 +276,10 @@ public class Learner {
         BinaryOutputArchive boa = BinaryOutputArchive.getArchive(bsid);
         boa.writeRecord(li, "LearnerInfo");
         qp.setData(bsid.toByteArray());
-        
+
         writePacket(qp, true);
-        readPacket(qp);        
-        final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
+        readPacket(qp);
+        final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid()); //新的Epoch
 		if (qp.getType() == Leader.LEADERINFO) {
         	// we are connected to a 1.0 server so accept the new epoch and read the next packet
         	leaderProtocolVersion = ByteBuffer.wrap(qp.getData()).getInt();
@@ -310,10 +310,10 @@ public class Learner {
             }
             return qp.getZxid();
         }
-    } 
-    
+    }
+
     /**
-     * Finally, synchronize our history with the Leader. 
+     * Finally, synchronize our history with the Leader.
      * @param newLeaderZxid
      * @throws IOException
      * @throws InterruptedException
@@ -342,7 +342,7 @@ public class Learner {
                 String signature = leaderIs.readString("signature");
                 if (!signature.equals("BenWasHere")) {
                     LOG.error("Missing signature. Got " + signature);
-                    throw new IOException("Missing signature");                   
+                    throw new IOException("Missing signature");
                 }
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
             } else if (qp.getType() == Leader.TRUNC) {
@@ -365,7 +365,7 @@ public class Learner {
 
             }
             zk.createSessionTracker();
-            
+
             long lastQueued = 0;
 
             // in Zab V1.0 (ZK 3.4+) we might take a snapshot when we get the NEWLEADER message, but in pre V1.0
@@ -439,9 +439,9 @@ public class Learner {
                         zk.takeSnapshot();
                         self.setCurrentEpoch(newEpoch);
                     }
-                    self.cnxnFactory.setZooKeeperServer(zk);                
+                    self.cnxnFactory.setZooKeeperServer(zk);
                     break outerLoop;
-                case Leader.NEWLEADER: // Getting NEWLEADER here instead of in discovery 
+                case Leader.NEWLEADER: // Getting NEWLEADER here instead of in discovery
                     // means this is Zab 1.0
                     // Create updatingEpoch file and remove it after current
                     // epoch is set. QuorumPeer.loadDataBase() uses this file to
@@ -478,7 +478,7 @@ public class Learner {
          * Update the election vote here to ensure that all members of the
          * ensemble report the same vote to new servers that start up and
          * send leader election notifications to the ensemble.
-         * 
+         *
          * @see https://issues.apache.org/jira/browse/ZOOKEEPER-1732
          */
         self.updateElectionVote(newEpoch);
@@ -518,7 +518,7 @@ public class Learner {
             throw new UnsupportedOperationException("Unknown server type");
         }
     }
-    
+
     protected void revalidate(QuorumPacket qp) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(qp
                 .getData());
@@ -541,7 +541,7 @@ public class Learner {
                     + " is valid: " + valid);
         }
     }
-        
+
     protected void ping(QuorumPacket qp) throws IOException {
         // Send back the ping with our session data
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -555,8 +555,8 @@ public class Learner {
         qp.setData(bos.toByteArray());
         writePacket(qp, true);
     }
-    
-    
+
+
     /**
      * Shutdown the Peer
      */

@@ -112,7 +112,7 @@ public class QuorumPeerMain {
         }
 
         // Start and schedule the the purge task
-        // 清楚快照和日志文件
+        // 清除快照和日志文件
         System.out.println(DatadirCleanupManager.class.getName());
         DatadirCleanupManager purgeMgr = new DatadirCleanupManager(config
                 .getDataDir(), config.getDataLogDir(), config

@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
 public class LearnerHandler extends ZooKeeperThread {
     private static final Logger LOG = LoggerFactory.getLogger(LearnerHandler.class);
 
-    protected final Socket sock;    
+    protected final Socket sock;
 
     public Socket getSocket() {
         return sock;
@@ -72,22 +72,22 @@ public class LearnerHandler extends ZooKeeperThread {
      * on the syncLimit. Once the deadline is past this learner should
      * be considered no longer "sync'd" with the leader. */
     volatile long tickOfNextAckDeadline;
-    
+
     /**
      * ZooKeeper server identifier of this learner
      */
     protected long sid = 0;
-    
+
     long getSid(){
         return sid;
-    }                    
+    }
 
     protected int version = 0x1;
-    
+
     int getVersion() {
     	return version;
     }
-    
+
     /**
      * The packets to be sent to the learner
      */
@@ -257,7 +257,7 @@ public class LearnerHandler extends ZooKeeperThread {
         String type = null;
         String mess = null;
         Record txn = null;
-        
+
         switch (p.getType()) {
         case Leader.ACK:
             type = "ACK";
@@ -267,7 +267,7 @@ public class LearnerHandler extends ZooKeeperThread {
             break;
         case Leader.FOLLOWERINFO:
             type = "FOLLOWERINFO";
-            break;    
+            break;
         case Leader.NEWLEADER:
             type = "NEWLEADER";
             break;
@@ -353,20 +353,20 @@ public class LearnerHandler extends ZooKeeperThread {
 
             LOG.info("Follower sid: " + sid + " : info : "
                     + leader.self.quorumPeers.get(sid));
-                        
+
             if (qp.getType() == Leader.OBSERVERINFO) {
                   learnerType = LearnerType.OBSERVER;
             }
 
-            //记录当前learner的最新的epoch
+            //记录当前learner的最新的epoch  （第几届）
             long lastAcceptedEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
-            
+
             long peerLastZxid;
             StateSummary ss = null;
             long zxid = qp.getZxid();
-            // 如果learner的epoch比自己高，更新自己的
+            // 如果learner的epoch比自己高，更新自己的   sid是learner的myid
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
-            
+
             if (this.getVersion() < 0x10000) {
                 // we are going to have to extrapolate the epoch information
                 long epoch = ZxidUtils.getEpochFromZxid(zxid);
@@ -394,16 +394,16 @@ public class LearnerHandler extends ZooKeeperThread {
                 leader.waitForEpochAck(this.getSid(), ss);
             }
             peerLastZxid = ss.getLastZxid();
-            
+
             /* the default to send to the follower */
             int packetToSend = Leader.SNAP;
             long zxidToSend = 0;
             long leaderLastZxid = 0;
             /** the packets that the follower needs to get updates from **/
             long updates = peerLastZxid;
-            
-            /* we are sending the diff check if we have proposals in memory to be able to 
-             * send a diff to the 
+
+            /* we are sending the diff check if we have proposals in memory to be able to
+             * send a diff to the
              */
 
             // 加读锁，这段时间内只能读，不能写
@@ -493,7 +493,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 } else {
                     // just let the state transfer happen
                     LOG.debug("proposals is empty");
-                }               
+                }
 
                 LOG.info("Sending " + Leader.getPacketType(packetToSend));
                 // 发送同步数据
@@ -520,21 +520,21 @@ public class LearnerHandler extends ZooKeeperThread {
             // 写发送类型，再发送数据
             oa.writeRecord(new QuorumPacket(packetToSend, zxidToSend, null, null), "packet");
             bufferedOutput.flush();
-            
+
             /* if we are not truncating or sending a diff just send a snapshot */
             if (packetToSend == Leader.SNAP) { //如果发出snap，代表告知learner进行snap方式的数据同步
                 LOG.info("Sending snapshot last zxid of peer is 0x"
-                        + Long.toHexString(peerLastZxid) + " " 
+                        + Long.toHexString(peerLastZxid) + " "
                         + " zxid of leader is 0x"
                         + Long.toHexString(leaderLastZxid)
-                        + "sent zxid of db as 0x" 
+                        + "sent zxid of db as 0x"
                         + Long.toHexString(zxidToSend));
                 // Dump data to peer
                 leader.zk.getZKDatabase().serializeSnapshot(oa); //SNAP恢复就是把当前的db的序列化内容发送出去
                 oa.writeString("BenWasHere", "signature"); //有特定的签名
             }
             bufferedOutput.flush();
-            
+
             // Start sending packets
             new Thread() {
                 public void run() {
@@ -547,9 +547,9 @@ public class LearnerHandler extends ZooKeeperThread {
                     }
                 }
             }.start(); //启动线程，发送消息去同步
-            
+
             /*
-             * Have to wait for the first ACK, wait until 
+             * Have to wait for the first ACK, wait until
              * the leader is ready, and only then we can
              * start processing messages.
              */
@@ -565,7 +565,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
             // 正常同步开启
             syncLimitCheck.start();
-            
+
             // now that the ack has been processed expect the syncLimit
             // 设置同步时间
             sock.setSoTimeout(leader.self.tickTime * leader.self.syncLimit); //请求阶段的读取超时时间 为 tickTime * syncLimit
@@ -687,7 +687,7 @@ public class LearnerHandler extends ZooKeeperThread {
             if (sock != null && !sock.isClosed()) {
                 LOG.error("Unexpected exception causing shutdown while sock "
                         + "still open", e);
-            	//close the socket to make sure the 
+            	//close the socket to make sure the
             	//other side can see it being close
             	try {
             		sock.close();
@@ -698,7 +698,7 @@ public class LearnerHandler extends ZooKeeperThread {
         } catch (InterruptedException e) {
             LOG.error("Unexpected exception causing shutdown", e);
         } finally {
-            LOG.warn("******* GOODBYE " 
+            LOG.warn("******* GOODBYE "
                     + (sock != null ? sock.getRemoteSocketAddress() : "<null>")
                     + " ********");
             // 不是一个普通的关闭

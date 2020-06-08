@@ -235,8 +235,10 @@ public class QuorumPeerConfig {
                     }
                 }
                 if (type == LearnerType.OBSERVER){
+                    //存放observers
                     observers.put(Long.valueOf(sid), new QuorumServer(sid, hostname, port, electionPort, type));
                 } else {
+                    //存放servers
                     servers.put(Long.valueOf(sid), new QuorumServer(sid, hostname, port, electionPort, type));
                 }
             } else if (key.startsWith("group")) {
@@ -396,6 +398,7 @@ public class QuorumPeerConfig {
                  */
 
                 LOG.info("Defaulting to majority quorums");
+                //集群验证器过半机制
                 quorumVerifier = new QuorumMaj(servers.size()); // 目前这个servers不包括参与者，所以再算过半的时候不包括观察者
             }
 
@@ -422,7 +425,7 @@ public class QuorumPeerConfig {
                 throw new IllegalArgumentException("serverid " + myIdString
                         + " is not a number");
             }
-            
+
             // Warn about inconsistent peer type
             LearnerType roleByServersList = observers.containsKey(serverId) ? LearnerType.OBSERVER
                     : LearnerType.PARTICIPANT;
@@ -430,7 +433,7 @@ public class QuorumPeerConfig {
                 LOG.warn("Peer type from servers list (" + roleByServersList
                         + ") doesn't match peerType (" + peerType
                         + "). Defaulting to servers list.");
-    
+
                 peerType = roleByServersList;
             }
         }
@@ -448,7 +451,7 @@ public class QuorumPeerConfig {
     public int getSyncLimit() { return syncLimit; }
     public int getElectionAlg() { return electionAlg; }
     public int getElectionPort() { return electionPort; }
-    
+
     public int getSnapRetainCount() {
         return snapRetainCount;
     }
@@ -456,7 +459,7 @@ public class QuorumPeerConfig {
     public int getPurgeInterval() {
         return purgeInterval;
     }
-    
+
     public boolean getSyncEnabled() {
         return syncEnabled;
     }
