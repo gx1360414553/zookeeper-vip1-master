@@ -496,7 +496,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 }
 
                 LOG.info("Sending " + Leader.getPacketType(packetToSend));
-                // 发送同步数据
+                // 发送同步数据(发送同步时收到的指令)
                 leaderLastZxid = leader.startForwarding(this, updates);
 
             } finally {

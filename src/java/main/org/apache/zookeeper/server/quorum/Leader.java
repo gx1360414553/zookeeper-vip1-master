@@ -532,7 +532,7 @@ public class Leader {
         }
 
         LOG.info("Shutdown called",
-                new Exception("shutdown Leader! reason: " + reason));
+                new Exception("shutdown Leader! reason: " + reason)); //当机器挂了存活数不超过一半时leader报错， socket关闭，其他Follower也报错
 
         if (cnxAcceptor != null) {
             cnxAcceptor.halt();

@@ -71,7 +71,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
     @Override
     public void run() {
         try {
-            Request nextPending = null;            
+            Request nextPending = null;
             while (!finished) {
                 // toProcess中的要么是非事务性请求，要么是已经可以被提交的事务性请求
                 int len = toProcess.size();
@@ -83,7 +83,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
                     // queuedRequests中存放的是已经发起了提议，正在等待ack的请求
                     if ((queuedRequests.size() == 0 || nextPending != null)
                             && committedRequests.size() == 0) {
-                        // ProposalRequestProcessor会负责往queuedRequests中添加请求，然后唤醒
+                        // ProposalRequestProcessor会负责往queuedRequests中添加请求，然后唤醒  等待投票结果
                         wait();
                         continue;
                     }
@@ -180,7 +180,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
         if (LOG.isDebugEnabled()) {
             LOG.debug("Processing request:: " + request);
         }
-        
+
         if (!finished) {
             queuedRequests.add(request);
             notifyAll();

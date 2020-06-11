@@ -25,7 +25,6 @@ public class ZookeeperClientConnectionTest {
             }
         });
 
-
         client.create("/luban-e", "1".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
         doTask(client);

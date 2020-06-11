@@ -287,7 +287,7 @@ public class Learner {
         	final ByteBuffer wrappedEpochBytes = ByteBuffer.wrap(epochBytes);
         	if (newEpoch > self.getAcceptedEpoch()) {
         		wrappedEpochBytes.putInt((int)self.getCurrentEpoch());
-        		self.setAcceptedEpoch(newEpoch);
+        		self.setAcceptedEpoch(newEpoch); //设置为最新的Epoch
         	} else if (newEpoch == self.getAcceptedEpoch()) {
         		// since we have already acked an epoch equal to the leaders, we cannot ack
         		// again, but we still need to send our lastZxid to the leader so that we can
@@ -297,6 +297,7 @@ public class Learner {
         	} else {
         		throw new IOException("Leaders epoch, " + newEpoch + " is less than accepted epoch, " + self.getAcceptedEpoch());
         	}
+        	//发送ACk数据
         	QuorumPacket ackNewEpoch = new QuorumPacket(Leader.ACKEPOCH, lastLoggedZxid, epochBytes, null);
         	writePacket(ackNewEpoch, true);
             return ZxidUtils.makeZxid(newEpoch, 0);
@@ -349,6 +350,7 @@ public class Learner {
                 //we need to truncate the log to the lastzxid of the leader
                 LOG.warn("Truncating log to get in sync with the leader 0x"
                         + Long.toHexString(qp.getZxid()));
+                //删除大于leader Zxid的数据
                 boolean truncated=zk.getZKDatabase().truncateLog(qp.getZxid());
                 if (!truncated) {
                     // not able to truncate the log
@@ -396,7 +398,7 @@ public class Learner {
                     packetsNotCommitted.add(pif);
                     break;
                 case Leader.COMMIT:
-
+                    //接收 leader同步时收到的指令
                     if (!writeToTxnLog) {
                         pif = packetsNotCommitted.peekFirst();
                         if (pif.hdr.getZxid() != qp.getZxid()) {

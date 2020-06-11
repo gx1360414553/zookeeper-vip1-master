@@ -700,7 +700,7 @@ public class DataTree {
 
     public volatile long lastProcessedZxid = 0;
 
-    // 根据事务来操作数据
+    // 根据事务来操作数据 更新内存
     public ProcessTxnResult processTxn(TxnHeader header, Record txn)
     {
         ProcessTxnResult rc = new ProcessTxnResult();

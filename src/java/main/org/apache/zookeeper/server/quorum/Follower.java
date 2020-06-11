@@ -36,7 +36,7 @@ public class Follower extends Learner{
     private long lastQueued;
     // This is the same object as this.zk, but we cache the downcast op
     final FollowerZooKeeperServer fzk;
-    
+
     Follower(QuorumPeer self,FollowerZooKeeperServer zk) {
         this.self = self;
         this.zk=zk;
@@ -68,13 +68,14 @@ public class Follower extends Learner{
         fzk.registerJMX(new FollowerBean(this, zk), self.jmxLocalPeerBean);
         try {
             // 选举完成后，Follower需要和Leader单独建立一条socket连接，用来同步数据
-            QuorumServer leaderServer = findLeader();            
+            QuorumServer leaderServer = findLeader();
             try {
                 connectToLeader(leaderServer.addr, leaderServer.hostname); // 建立socket,连接leader
                 long newEpochZxid = registerWithLeader(Leader.FOLLOWERINFO); // 注册，其实就是告诉Leader，当前Follower自己的信息，比如最大的zxid，并且Leader返回Leader当前最大的zxid。
 
                 //check to see if the leader zxid is lower than ours
                 //this should never happen but is just a safety check
+                //事务id左移32位就是Epoch第几届选举的版本
                 long newEpoch = ZxidUtils.getEpochFromZxid(newEpochZxid);
                 // 安全检查，如果Leader的epoch小于Follower的epoch，这种情况是不应该出现的
                 if (newEpoch < self.getAcceptedEpoch()) {
@@ -98,7 +99,7 @@ public class Follower extends Learner{
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-    
+
                 // clear pending revalidations
                 pendingRevalidations.clear();
             }
@@ -116,7 +117,7 @@ public class Follower extends Learner{
         switch (qp.getType()) {
         case Leader.PING:
 //            System.out.println("处理ping");
-            ping(qp);            
+            ping(qp);
             break;
         case Leader.PROPOSAL:
             // 接受到提议，直接持久化，如果持久化成功了
@@ -162,7 +163,7 @@ public class Follower extends Learner{
         }
         return -1;
     }
-    
+
     /**
      * The zxid of the last operation queued
      * @return zxid
@@ -172,7 +173,7 @@ public class Follower extends Learner{
     }
 
     @Override
-    public void shutdown() {    
+    public void shutdown() {
         LOG.info("shutdown called", new Exception("shutdown Follower"));
         super.shutdown();
     }
