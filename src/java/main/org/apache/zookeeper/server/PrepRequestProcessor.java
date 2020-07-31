@@ -178,7 +178,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
 
     void addChangeRecord(ChangeRecord c) {
         synchronized (zks.outstandingChanges) {
-            zks.outstandingChanges.add(c);
+            zks.outstandingChanges.add(c);//会在FinalRequestProcessor.processRequest中取出
             zks.outstandingChangesForPath.put(c.path, c);
         }
     }
@@ -387,14 +387,14 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                         listACL,
                         createMode.isEphemeral(), newCversion);
                 StatPersisted s = new StatPersisted();
-                if (createMode.isEphemeral()) {
+                if (createMode.isEphemeral()) {//临时节点
                     s.setEphemeralOwner(request.sessionId);
                 }
                 parentRecord = parentRecord.duplicate(request.hdr.getZxid());
                 parentRecord.childCount++;
                 parentRecord.stat.setCversion(newCversion);
                 // 把修改记录加入到集合容器中去，那么就肯定有线程服务去取修改记录进行修改
-                addChangeRecord(parentRecord);
+                addChangeRecord(parentRecord);//对父节点的修改newCversion的修改
                 addChangeRecord(new ChangeRecord(request.hdr.getZxid(), path, s,
                         0, listACL));
                 break;
@@ -456,8 +456,8 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     ByteBufferInputStream.byteBuffer2Record(request.request, setAclRequest);
                 path = setAclRequest.getPath();
                 validatePath(path, request.sessionId);
-                listACL = removeDuplicates(setAclRequest.getAcl());
-                if (!fixupACL(request.authInfo, listACL)) {
+                listACL = removeDuplicates(setAclRequest.getAcl());//去重
+                if (!fixupACL(request.authInfo, listACL)) { //更该节点已有的权限
                     throw new KeeperException.InvalidACLException(path);
                 }
                 nodeRecord = getRecordForPath(path);
@@ -500,7 +500,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     }
                     for (String path2Delete : es) {
                         addChangeRecord(new ChangeRecord(request.hdr.getZxid(),
-                                path2Delete, null, 0, null));
+                                path2Delete, null, 0, null));//关闭session临时节点处理
                     }
 
                     zks.sessionTracker.setSessionClosing(request.sessionId);

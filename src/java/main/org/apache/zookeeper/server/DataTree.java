@@ -396,7 +396,7 @@ public class DataTree {
             parent.stat.setCversion(parentCVersion);
             parent.stat.setPzxid(zxid);
             Long longval = aclCache.convertAcls(acl);
-            DataNode child = new DataNode(parent, data, longval, stat);
+            DataNode child = new DataNode(parent, data, longval, stat);//在内存中添加节点
             parent.addChild(childName);
             nodes.put(path, child);
             // 如果是临时节点
@@ -404,7 +404,7 @@ public class DataTree {
                 HashSet<String> list = ephemerals.get(ephemeralOwner);
                 if (list == null) {
                     list = new HashSet<String>();
-                    ephemerals.put(ephemeralOwner, list);
+                    ephemerals.put(ephemeralOwner, list);//存储临时节点
                 }
                 synchronized (list) {
                     list.add(path);
@@ -533,7 +533,7 @@ public class DataTree {
           this.updateBytes(lastPrefix, (data == null ? 0 : data.length)
               - (lastdata == null ? 0 : lastdata.length));
         }
-        //服务端触发事件
+        //服务端触发Watch事件
         dataWatches.triggerWatch(path, EventType.NodeDataChanged);
         return s;
     }

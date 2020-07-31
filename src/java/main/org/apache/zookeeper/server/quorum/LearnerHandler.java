@@ -325,8 +325,8 @@ public class LearnerHandler extends ZooKeeperThread {
             tickOfNextAckDeadline = leader.self.tick.get()
                     + leader.self.initLimit + leader.self.syncLimit;
 
-            ia = BinaryInputArchive.getArchive(bufferedInput);
-            bufferedOutput = new BufferedOutputStream(sock.getOutputStream());
+            ia = BinaryInputArchive.getArchive(bufferedInput);//输入 用来读取数据
+            bufferedOutput = new BufferedOutputStream(sock.getOutputStream());//输出  用来输出数据
             oa = BinaryOutputArchive.getArchive(bufferedOutput);
 
             QuorumPacket qp = new QuorumPacket();
@@ -391,7 +391,7 @@ public class LearnerHandler extends ZooKeeperThread {
 				}
                 ByteBuffer bbepoch = ByteBuffer.wrap(ackEpochPacket.getData());
                 ss = new StateSummary(bbepoch.getInt(), ackEpochPacket.getZxid());
-                leader.waitForEpochAck(this.getSid(), ss);
+                leader.waitForEpochAck(this.getSid(), ss);//等待过半数的follower响应ack
             }
             peerLastZxid = ss.getLastZxid();
 
@@ -467,12 +467,12 @@ public class LearnerHandler extends ZooKeeperThread {
                                     // Does the peer have some proposals that the leader hasn't seen yet
                                     if (prevProposalZxid < peerLastZxid) { //如果learner有一些leader不知道的请求(正常来说应该是prevProposalZxid == peerLastZxid)
                                         // send a trunc message before sending the diff
-                                        packetToSend = Leader.TRUNC;    // 让learner回滚
+                                        packetToSend = Leader.TRUNC;    // 让learner回滚prevProposalZxid事务id
                                         zxidToSend = prevProposalZxid;
                                         updates = zxidToSend;
                                     }
                                 }
-                                queuePacket(propose.packet);
+                                queuePacket(propose.packet);//PROPOSAL类型learner根据这个类型加入没有提交的packet中
                                 QuorumPacket qcommit = new QuorumPacket(Leader.COMMIT, propose.packet.getZxid(),
                                         null, null);
                                 queuePacket(qcommit);
@@ -530,7 +530,7 @@ public class LearnerHandler extends ZooKeeperThread {
                         + "sent zxid of db as 0x"
                         + Long.toHexString(zxidToSend));
                 // Dump data to peer
-                leader.zk.getZKDatabase().serializeSnapshot(oa); //SNAP恢复就是把当前的db的序列化内容发送出去
+                leader.zk.getZKDatabase().serializeSnapshot(oa); //SNAP恢复就是把当前的快照数据内容序列化发送出去
                 oa.writeString("BenWasHere", "signature"); //有特定的签名
             }
             bufferedOutput.flush();

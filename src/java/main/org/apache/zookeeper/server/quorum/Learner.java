@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
  * This class is the superclass of two of the three main actors in a ZK
  * ensemble: Followers and Observers. Both Followers and Observers share
  * a good deal of code which is moved into Peer to avoid duplication.
+ *
  */
 public class Learner {
     static class PacketInFlight {
@@ -186,7 +187,7 @@ public class Learner {
         oa.close();
         QuorumPacket qp = new QuorumPacket(Leader.REQUEST, -1, baos
                 .toByteArray(), request.authInfo);
-        writePacket(qp, true);
+        writePacket(qp, true);//发送给leader
     }
 
     /**
@@ -279,7 +280,7 @@ public class Learner {
 
         writePacket(qp, true);
         readPacket(qp);
-        final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid()); //新的Epoch
+        final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid()); //新的Epoch 也就是第几次选举
 		if (qp.getType() == Leader.LEADERINFO) {
         	// we are connected to a 1.0 server so accept the new epoch and read the next packet
         	leaderProtocolVersion = ByteBuffer.wrap(qp.getData()).getInt();
@@ -339,7 +340,7 @@ public class Learner {
                 // The leader is going to dump the database
                 // clear our own database and read
                 zk.getZKDatabase().clear();
-                zk.getZKDatabase().deserializeSnapshot(leaderIs);
+                zk.getZKDatabase().deserializeSnapshot(leaderIs);//反序列化传输过来快照数据生成tree
                 String signature = leaderIs.readString("signature");
                 if (!signature.equals("BenWasHere")) {
                     LOG.error("Missing signature. Got " + signature);
@@ -408,6 +409,7 @@ public class Learner {
                             packetsNotCommitted.remove();
                         }
                     } else {
+                        //需要写事务log
                         // 提交命令过来了就放入到packetsCommitted中
                         packetsCommitted.add(qp.getZxid());
                     }
@@ -442,7 +444,7 @@ public class Learner {
                         self.setCurrentEpoch(newEpoch);
                     }
                     self.cnxnFactory.setZooKeeperServer(zk);
-                    break outerLoop;
+                    break outerLoop;//跳出循环
                 case Leader.NEWLEADER: // Getting NEWLEADER here instead of in discovery
                     // means this is Zab 1.0
                     // Create updatingEpoch file and remove it after current
@@ -489,10 +491,10 @@ public class Learner {
         if (zk instanceof FollowerZooKeeperServer) {
             FollowerZooKeeperServer fzk = (FollowerZooKeeperServer)zk;
             for(PacketInFlight p: packetsNotCommitted) {
-                fzk.logRequest(p.hdr, p.rec);
+                fzk.logRequest(p.hdr, p.rec);//同步到磁盘
             }
             for(Long zxid: packetsCommitted) {
-                fzk.commit(zxid);
+                fzk.commit(zxid);//会调用finalprocess更新内存
             }
         } else if (zk instanceof ObserverZooKeeperServer) {
             // Similar to follower, we need to log requests between the snapshot

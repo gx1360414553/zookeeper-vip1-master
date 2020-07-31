@@ -108,7 +108,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
                             nextPending.hdr = r.hdr;
                             nextPending.txn = r.txn;
                             nextPending.zxid = r.zxid;
-                            toProcess.add(nextPending);
+                            toProcess.add(nextPending);//加入到toProcess 以便调用下一个process(FinalRequestProcessor) 进行内存更新
                             nextPending = null;
                         } else {
                             // this request came from someone else so just

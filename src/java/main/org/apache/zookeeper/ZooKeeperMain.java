@@ -265,7 +265,7 @@ public class ZooKeeperMain {
         return new LinkedList<String>(commandMap.keySet());
     }
 
-    protected String getPrompt() {       
+    protected String getPrompt() {
         return "[zk: " + host + "("+zk.getState()+")" + " " + commandCount + "] ";
     }
 
@@ -283,7 +283,7 @@ public class ZooKeeperMain {
                  Integer.parseInt(cl.getOption("timeout")),
                  new MyWatcher(), readOnly);
     }
-    
+
     public static void main(String args[])
         throws KeeperException, IOException, InterruptedException
     {
@@ -312,7 +312,7 @@ public class ZooKeeperMain {
             boolean jlinemissing = false;
             // only use jline if it's in the classpath
             try {
-                Class<?> consoleC = Class.forName("jline.ConsoleReader");
+                Class<?> consoleC = Class.forName("jline.ConsoleReader");//启动命令行的java类
                 Class<?> completorC =
                     Class.forName("org.apache.zookeeper.JLineZNodeCompletor");
 
@@ -330,7 +330,7 @@ public class ZooKeeperMain {
                 String line;
                 Method readLine = consoleC.getMethod("readLine", String.class);
                 while ((line = (String)readLine.invoke(console, getPrompt())) != null) {
-                    executeLine(line);
+                    executeLine(line);//执行客户端命令行输入的指令
                 }
             } catch (ClassNotFoundException e) {
                 LOG.debug("Unable to start jline", e);
@@ -369,8 +369,8 @@ public class ZooKeeperMain {
     throws InterruptedException, IOException, KeeperException {
       if (!line.equals("")) {
         cl.parseCommand(line);
-        addToHistory(commandCount,line);
-        processCmd(cl);
+        addToHistory(commandCount,line);//加入历史命令中
+        processCmd(cl);//处理命令
         commandCount++;
       }
     }
@@ -639,7 +639,7 @@ public class ZooKeeperMain {
             usage();
             return false;
         }
-        
+
         boolean watch = args.length > 2;
         String path = null;
         List<ACL> acl = Ids.OPEN_ACL_UNSAFE;
@@ -680,13 +680,13 @@ public class ZooKeeperMain {
                 connectToZK(host);
             }
         }
-        
+
         // Below commands all need a live connection
         if (zk == null || !zk.getState().isAlive()) {
             System.out.println("Not connected");
             return false;
         }
-        
+
         if (cmd.equals("create") && args.length >= 3) {
             int first = 0;
             // 构造CreateMode,从参数里面解析出节点类型

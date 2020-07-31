@@ -220,7 +220,7 @@ public class FinalRequestProcessor implements RequestProcessor {
             }
             case OpCode.create: {
                 lastOp = "CREA";
-                rsp = new CreateResponse(rc.path);
+                rsp = new CreateResponse(rc.path);//返回结果对象
                 err = Code.get(rc.err);
                 break;
             }

@@ -188,7 +188,7 @@ public class ClientCnxn {
      * operation)
      */
     private volatile boolean closing = false;
-    
+
     /**
      * A set of ZooKeeper hosts this client could connect to.
      */
@@ -652,6 +652,7 @@ public class ClientCnxn {
 
     private void finishPacket(Packet p) {
         if (p.watchRegistration != null) {
+//            设置对应path的Watch
             p.watchRegistration.register(p.replyHeader.getErr());
         }
 
@@ -659,7 +660,7 @@ public class ClientCnxn {
             // 操作同步通知
             synchronized (p) {
                 p.finished = true;
-                p.notifyAll();
+                p.notifyAll();//唤醒
             }
         } else {
             // 操作异步通知
@@ -697,7 +698,7 @@ public class ClientCnxn {
         public EndOfStreamException(String msg) {
             super(msg);
         }
-        
+
         @Override
         public String toString() {
             return "EndOfStreamException: " + getMessage();
@@ -711,7 +712,7 @@ public class ClientCnxn {
             super(msg);
         }
     }
-    
+
     private static class SessionExpiredException extends IOException {
         private static final long serialVersionUID = -1388816932076193249L;
 
@@ -727,7 +728,7 @@ public class ClientCnxn {
             super(msg);
         }
     }
-    
+
     public static final int packetLen = Integer.getInteger("jute.maxbuffer",
             4096 * 1024);
 
@@ -738,7 +739,7 @@ public class ClientCnxn {
     class SendThread extends ZooKeeperThread {
         private long lastPingSentNs;
         private final ClientCnxnSocket clientCnxnSocket;
-        private Random r = new Random(System.nanoTime());        
+        private Random r = new Random(System.nanoTime());
         private boolean isFirstConnect = true;
 
         // 读取响应
@@ -761,11 +762,11 @@ public class ClientCnxn {
                 return;
             }
             if (replyHdr.getXid() == -4) { // 认证结果
-                // -4 is the xid for AuthPacket               
+                // -4 is the xid for AuthPacket
                 if(replyHdr.getErr() == KeeperException.Code.AUTHFAILED.intValue()) {
-                    state = States.AUTH_FAILED;                    
-                    eventThread.queueEvent( new WatchedEvent(Watcher.Event.EventType.None, 
-                            Watcher.Event.KeeperState.AuthFailed, null) );            		            		
+                    state = States.AUTH_FAILED;
+                    eventThread.queueEvent( new WatchedEvent(Watcher.Event.EventType.None,
+                            Watcher.Event.KeeperState.AuthFailed, null) );
                 }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Got auth sessionid:0x"
@@ -860,7 +861,7 @@ public class ClientCnxn {
                             + Long.toHexString(sessionId) + ", packet:: " + packet);
                 }
             } finally {
-                // 处理packet
+                // 处理packet 设置对应path的Watch
                 finishPacket(packet);
             }
         }
@@ -879,7 +880,7 @@ public class ClientCnxn {
         // Runnable
         /**
          * Used by ClientCnxnSocket
-         * 
+         *
          * @return
          */
         ZooKeeper.States getZkState() {
@@ -1048,7 +1049,7 @@ public class ClientCnxn {
 
         private static final String RETRY_CONN_MSG =
             ", closing socket connection and attempting reconnect";
-        
+
         @Override
         public void run() {
             clientCnxnSocket.introduce(this,sessionId);
@@ -1140,8 +1141,8 @@ public class ClientCnxn {
                         // 如果连接成功，就不断了ping
 
                     	//1000(1 second) is to prevent race condition missing to send the second ping
-                    	//also make sure not to send too many pings when readTimeout is small 
-                        int timeToNextPing = readTimeout / 2 - clientCnxnSocket.getIdleSend() - 
+                    	//also make sure not to send too many pings when readTimeout is small
+                        int timeToNextPing = readTimeout / 2 - clientCnxnSocket.getIdleSend() -
                         		((clientCnxnSocket.getIdleSend() > 1000) ? 1000 : 0);
                         //send a ping request either time is due or no packet sent out within MAX_SEND_PING_INTERVAL
                         if (timeToNextPing <= 0 || clientCnxnSocket.getIdleSend() > MAX_SEND_PING_INTERVAL) {
@@ -1297,7 +1298,7 @@ public class ClientCnxn {
         /**
          * Callback invoked by the ClientCnxnSocket once a connection has been
          * established.
-         * 
+         *
          * @param _negotiatedSessionTimeout
          * @param _sessionId
          * @param _sessionPasswd
@@ -1306,6 +1307,7 @@ public class ClientCnxn {
          */
         void onConnected(int _negotiatedSessionTimeout, long _sessionId,
                 byte[] _sessionPasswd, boolean isRO) throws IOException {
+            //根据连接成功响应的数据设置一些属性
             negotiatedSessionTimeout = _negotiatedSessionTimeout;
             if (negotiatedSessionTimeout <= 0) {
                 state = States.CLOSED;
@@ -1442,7 +1444,7 @@ public class ClientCnxn {
                     null, watchRegistration);
         synchronized (packet) {
             while (!packet.finished) {
-                packet.wait();
+                packet.wait();//等待
             }
         }
         return r;
@@ -1495,7 +1497,7 @@ public class ClientCnxn {
                 outgoingQueue.add(packet);
             }
         }
-        sendThread.getClientCnxnSocket().wakeupCnxn();
+        sendThread.getClientCnxnSocket().wakeupCnxn(); //及时唤醒selector去处理写
         return packet;
     }
 

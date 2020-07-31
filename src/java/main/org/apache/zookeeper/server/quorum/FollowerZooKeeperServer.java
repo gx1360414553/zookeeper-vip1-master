@@ -37,7 +37,7 @@ import org.apache.zookeeper.txn.TxnHeader;
  * Just like the standard ZooKeeperServer. We just replace the request
  * processors: FollowerRequestProcessor -> CommitProcessor ->
  * FinalRequestProcessor
- * 
+ *
  * A SyncRequestProcessor is also spawned off to log proposals from the leader.
  */
 public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
@@ -52,7 +52,7 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
      * Pending sync requests
      */
     ConcurrentLinkedQueue<Request> pendingSyncs;
-    
+
     /**
      * @param port
      * @param dataDir
@@ -67,7 +67,7 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
 
     public Follower getFollower(){
         return self.follower;
-    }      
+    }
 
     @Override
     protected void setupRequestProcessors() {
@@ -99,11 +99,11 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
         if ((request.zxid & 0xffffffffL) != 0) {
             pendingTxns.add(request);
         }
-        syncProcessor.processRequest(request);
+        syncProcessor.processRequest(request); //在下一个nextprocess（SendAckRequestProcessor）中发送ack数据包
     }
 
     /**
-     * When a COMMIT message is received, eventually this method is called, 
+     * When a COMMIT message is received, eventually this method is called,
      * which matches up the zxid from the COMMIT with (hopefully) the head of
      * the pendingTxns queue and hands it to the commitProcessor to commit.
      * @param zxid - must correspond to the head of pendingTxns if it exists
@@ -124,22 +124,22 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
         Request request = pendingTxns.remove();
         commitProcessor.commit(request);
     }
-    
+
     synchronized public void sync(){
         if(pendingSyncs.size() ==0){
             LOG.warn("Not expecting a sync.");
             return;
         }
-                
+
         Request r = pendingSyncs.remove();
 		commitProcessor.commit(r);
     }
-             
+
     @Override
     public int getGlobalOutstandingLimit() {
         return super.getGlobalOutstandingLimit() / (self.getQuorumSize() - 1);
     }
-    
+
     @Override
     public void shutdown() {
         LOG.info("Shutting down");
@@ -157,7 +157,7 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
                     e);
         }
     }
-    
+
     @Override
     public String getState() {
         return "follower";

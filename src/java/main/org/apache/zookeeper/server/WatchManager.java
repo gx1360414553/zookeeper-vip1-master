@@ -117,7 +117,7 @@ public class WatchManager {
             if (supress != null && supress.contains(w)) {
                 continue;
             }
-            w.process(e);
+            w.process(e); //服务端执行watch事件通知客户端  调用org.apache.zookeeper.server.NIOServerCnxn.process
         }
         return watchers;
     }

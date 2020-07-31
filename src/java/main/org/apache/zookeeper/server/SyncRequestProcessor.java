@@ -113,7 +113,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
         randRoll = roll;
     }
 
-    //生成快照
+    //持久化生成快照
     @Override
     public void run() {
         try {
@@ -139,7 +139,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                 }
                 if (si != null) {
                     // track the number of records written to the log
-                    // 先持久化事务日志！成功了才继续下面的操作
+                    // 先持久化事务日志！成功了才继续下面的操作  事务日志每次都会存到磁盘中
                     // 一个事务日志文件会有多个请求
                     if (zks.getZKDatabase().append(si)) {
                         // 每个请求加1
@@ -150,12 +150,12 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                             //生成快照
                             setRandRoll(r.nextInt(snapCount/2)); //下一次的随机数重新选
                             // roll the log
-                            zks.getZKDatabase().rollLog(); //事务日志滚动记录到另外一个新文件   fush logstream
+                            zks.getZKDatabase().rollLog(); //事务日志滚动记录到另外一个新快照文件   fush logstream
                             // take a snapshot
                             if (snapInProcess != null && snapInProcess.isAlive()) { //正在进行快照
                                 LOG.warn("Too busy to snap, skipping");
                             } else {
-                                // 没有开启快照线程的话就单独开启一个线程，这个线程里没有循环，所以只会执行一次
+                                // 没有开启快照线程的话就单独开启一个线程，这个线程里没有循环，所以只会执行一次 把内存中的DataTree的数据存到新的快照文件中
                                 snapInProcess = new ZooKeeperThread("Snapshot Thread") {
                                         public void run() {
                                             try {

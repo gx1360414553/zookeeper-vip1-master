@@ -1133,7 +1133,7 @@ public class NIOServerCnxn extends ServerCnxn {
             byte b[] = baos.toByteArray();
             ByteBuffer bb = ByteBuffer.wrap(b);
             bb.putInt(b.length - 4).rewind();
-            // 将bb加入到outgoingBuffers中去
+            // 将bb加入到outgoingBuffers中去   通过socket把结果发送给客户端
             sendBuffer(bb);
             if (h.getXid() > 0) {
                 synchronized(this){

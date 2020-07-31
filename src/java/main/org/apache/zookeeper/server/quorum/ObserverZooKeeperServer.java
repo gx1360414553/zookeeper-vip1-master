@@ -31,71 +31,71 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 
 /**
  * A ZooKeeperServer for the Observer node type. Not much is different, but
- * we anticipate specializing the request processors in the future. 
+ * we anticipate specializing the request processors in the future.
  *
  */
 public class ObserverZooKeeperServer extends LearnerZooKeeperServer {
     private static final Logger LOG =
-        LoggerFactory.getLogger(ObserverZooKeeperServer.class);        
-    
+        LoggerFactory.getLogger(ObserverZooKeeperServer.class);
+
     /**
      * Enable since request processor for writing txnlog to disk and
      * take periodic snapshot. Default is ON.
      */
-    
+
     private boolean syncRequestProcessorEnabled = this.self.getSyncEnabled();
-    
+
     /*
      * Request processors
      */
     private CommitProcessor commitProcessor;
     private SyncRequestProcessor syncProcessor;
-    
+
     /*
      * Pending sync requests
      */
-    ConcurrentLinkedQueue<Request> pendingSyncs = 
+    ConcurrentLinkedQueue<Request> pendingSyncs =
         new ConcurrentLinkedQueue<Request>();
-        
+
     ObserverZooKeeperServer(FileTxnSnapLog logFactory, QuorumPeer self,
             DataTreeBuilder treeBuilder, ZKDatabase zkDb) throws IOException {
         super(logFactory, self.tickTime, self.minSessionTimeout,
                 self.maxSessionTimeout, treeBuilder, zkDb, self);
         LOG.info("syncEnabled =" + syncRequestProcessorEnabled);
     }
-    
+
     public Observer getObserver() {
         return self.observer;
     }
-    
+
     @Override
     public Learner getLearner() {
         return self.observer;
-    }       
-    
+    }
+
     /**
      * Unlike a Follower, which sees a full request only during the PROPOSAL
-     * phase, Observers get all the data required with the INFORM packet. 
+     * phase, Observers get all the data required with the INFORM packet.
      * This method commits a request that has been unpacked by from an INFORM
-     * received from the Leader. 
-     *      
+     * received from the Leader.
+     *
      * @param request
      */
-    public void commitRequest(Request request) {     
+    public void commitRequest(Request request) {
         if (syncRequestProcessorEnabled) {
             // Write to txnlog and take periodic snapshot
             syncProcessor.processRequest(request);
         }
-        commitProcessor.commit(request);        
+        commitProcessor.commit(request);
     }
-    
+
     /**
      * Set up the request processors for an Observer:
      * firstProcesor->commitProcessor->finalProcessor
      */
     @Override
-    protected void setupRequestProcessors() {      
-        // We might consider changing the processor behaviour of 
+    protected void setupRequestProcessors() {
+        // We might consider changing the processor behaviour of
         // Observers to, for example, remove the disk sync requirements.
         // Currently, they behave almost exactly the same as followers.
         RequestProcessor finalProcessor = new FinalRequestProcessor(this);
@@ -114,7 +114,7 @@ public class ObserverZooKeeperServer extends LearnerZooKeeperServer {
          * However, this may degrade performance as it has to write to disk
          * and do periodic snapshot which may double the memory requirements
          */
-        if (syncRequestProcessorEnabled) {
+        if (syncRequestProcessorEnabled) {//观察者需不需要持久化
             syncProcessor = new SyncRequestProcessor(this, null);
             syncProcessor.start();
         }
@@ -128,15 +128,15 @@ public class ObserverZooKeeperServer extends LearnerZooKeeperServer {
             LOG.warn("Not expecting a sync.");
             return;
         }
-                
+
         Request r = pendingSyncs.remove();
         commitProcessor.commit(r);
     }
-    
+
     @Override
     public String getState() {
         return "observer";
-    };    
+    };
 
     @Override
     public synchronized void shutdown() {

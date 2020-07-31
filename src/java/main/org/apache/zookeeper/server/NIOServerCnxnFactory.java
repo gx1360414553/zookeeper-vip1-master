@@ -116,7 +116,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
     public void start() {
         // ensure thread is started once and only once
         if (thread.getState() == Thread.State.NEW) {
-            thread.start();
+            thread.start(); //执行的是此类中的run方法
         }
     }
 
@@ -125,6 +125,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
             InterruptedException {
         start();//开启接受处理命令的线程
         setZooKeeperServer(zks);
+        //加载快照数据到内存
         zks.startdata();
         zks.startup();
     }
@@ -237,7 +238,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
                     } else if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {
                         // 接收数据,这里会间歇性的接收到客户端ping
                         NIOServerCnxn c = (NIOServerCnxn) k.attachment();
-                        c.doIO(k);
+                        c.doIO(k);//网路传输
                     } else {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Unexpected ops in select "

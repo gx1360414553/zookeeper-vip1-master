@@ -471,14 +471,14 @@ public class FastLeaderElection implements Election {
          */
         Messenger(QuorumCnxManager manager) {
 
-            this.ws = new WorkerSender(manager);
+            this.ws = new WorkerSender(manager);//线程
 
             Thread t = new Thread(this.ws,
                     "WorkerSender[myid=" + self.getId() + "]");
             t.setDaemon(true);
             t.start();
 
-            this.wr = new WorkerReceiver(manager);
+            this.wr = new WorkerReceiver(manager);//线程
 
             t = new Thread(this.wr,
                     "WorkerReceiver[myid=" + self.getId() + "]");
@@ -578,7 +578,7 @@ public class FastLeaderElection implements Election {
      */
     private void sendNotifications() {
         for (QuorumServer server : self.getVotingView().values()) {
-            long sid = server.id;
+            long sid = server.id;//循环
 
             ToSend notmsg = new ToSend(ToSend.mType.notification,
                     proposedLeader,
@@ -835,7 +835,7 @@ public class FastLeaderElection implements Election {
 
             LOG.info("New election. My id =  " + self.getId() +
                     ", proposed zxid=0x" + Long.toHexString(proposedZxid));
-            sendNotifications(); // 发送选票，先投票给自己
+            sendNotifications(); // 发送选票，给所有参与投票的服务器发送notifications
 
             /*
              * Loop in which we exchange notifications until we find a leader
@@ -877,7 +877,7 @@ public class FastLeaderElection implements Election {
                             tmpTimeOut : maxNotificationInterval);
                     LOG.info("Notification time out: " + notTimeout);
                 }
-                else if(validVoter(n.sid) && validVoter(n.leader)) {
+                else if(validVoter(n.sid) && validVoter(n.leader)) {//leader是sid
                     // 如果接收到了结果
                     /*
                      * Only proceed if the vote comes from a replica in the

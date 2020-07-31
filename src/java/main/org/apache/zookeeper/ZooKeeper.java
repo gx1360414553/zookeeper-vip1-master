@@ -195,7 +195,7 @@ public class ZooKeeper {
             case NodeDataChanged:
             case NodeCreated:
                 synchronized (dataWatches) {
-                    // 这里负责移除加入的watch
+                    // 这里负责移除加入的watch   org.apache.zookeeper.ClientCnxn.finishPacket该方法把Watch的实现类放进了dataWatches中
                     addTo(dataWatches.remove(clientPath), result);
                 }
                 synchronized (existWatches) {
@@ -445,7 +445,7 @@ public class ZooKeeper {
                 + " sessionTimeout=" + sessionTimeout + " watcher=" + watcher);
 
         watchManager.defaultWatcher = watcher;
-
+        //包装地址
         ConnectStringParser connectStringParser = new ConnectStringParser(
                 connectString);
         HostProvider hostProvider = new StaticHostProvider(

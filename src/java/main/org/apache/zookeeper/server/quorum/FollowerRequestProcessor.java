@@ -68,8 +68,8 @@ public class FollowerRequestProcessor extends ZooKeeperCriticalThread implements
                 // We want to queue the request to be processed before we submit
                 // the request to the leader so that we are ready to receive
                 // the response
-                nextProcessor.processRequest(request);
-                
+                nextProcessor.processRequest(request);//（CommitProcessor）
+
                 // We now ship the request to the leader. As with all
                 // other quorum operations, sync also follows this code
                 // path, but different from others, we need to keep track

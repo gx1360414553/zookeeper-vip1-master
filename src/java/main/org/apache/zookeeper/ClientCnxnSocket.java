@@ -36,10 +36,10 @@ import org.slf4j.LoggerFactory;
 /**
  * A ClientCnxnSocket does the lower level communication with a socket
  * implementation.
- * 
+ *
  * This code has been moved out of ClientCnxn so that a Netty implementation can
  * be provided as an alternative to the NIO socket code.
- * 
+ *
  */
 abstract class ClientCnxnSocket {
     private static final Logger LOG = LoggerFactory.getLogger(ClientCnxnSocket.class);
@@ -78,7 +78,7 @@ abstract class ClientCnxnSocket {
         now = Time.currentElapsedTime();
     }
 
-    // 获取接收数据的空闲时间
+    // 获取接收数据的空闲时间(距离上一次读取数据的时间)
     int getIdleRecv() {
         return (int) (now - lastHeard);
     }

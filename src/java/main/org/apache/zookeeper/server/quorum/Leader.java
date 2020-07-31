@@ -325,6 +325,7 @@ public class Leader {
             try {
                 while (!stop) {
                     try{
+                        //等待leaner连接
                         Socket s = ss.accept();
                         // start with the initLimit, once the ack is processed
                         // in LearnerHandler switch to the syncLimit
@@ -393,7 +394,7 @@ public class Leader {
             // Start thread that waits for connection requests from
             // new followers.
             cnxAcceptor = new LearnerCnxAcceptor();
-            cnxAcceptor.start();
+            cnxAcceptor.start();//开启线程
 
             readyToStart = true;
             long epoch = getEpochToPropose(self.getId(), self.getAcceptedEpoch());
@@ -438,7 +439,7 @@ public class Leader {
             }
 
             // 初始化
-            startZkServer();
+            startZkServer();//里面zk.startup();
 
             /**
              * WARNING: do not use this for anything other than QA testing
@@ -502,7 +503,7 @@ public class Leader {
                     return;
                 }
 
-              // 如果Leader发现已经没有超过一半的Learner存活了，那么shutdown自己
+              // 如果Leader发现已经没有超过一半的Learner存活了，那么关闭socket shutdown自己会导致其他follower报错成为LOOKING  就会返回
               if (!tickSkip && !self.getQuorumVerifier().containsQuorum(syncedSet)) {
                 //if (!tickSkip && syncedCount < self.quorumPeers.size() / 2) {
                     // Lost quorum, shutdown
@@ -612,7 +613,7 @@ public class Leader {
             return;
         }
 
-        p.ackSet.add(sid);
+        p.ackSet.add(sid);//添加learner的myid
         if (LOG.isDebugEnabled()) {
             LOG.debug("Count for zxid: 0x{} is {}",
                     Long.toHexString(zxid), p.ackSet.size());
@@ -902,7 +903,7 @@ public class Leader {
                 long cur = start;
                 long end = start + self.getInitLimit()*self.getTickTime();
                 while(waitingForNewEpoch && cur < end) {
-                    connectingFollowers.wait(end - cur);
+                    connectingFollowers.wait(end - cur);//进入等待
                     cur = Time.currentElapsedTime();
                 }
                 if (waitingForNewEpoch) {
