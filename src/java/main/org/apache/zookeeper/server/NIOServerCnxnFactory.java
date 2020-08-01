@@ -232,12 +232,12 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
                             SelectionKey sk = sc.register(selector,
                                     SelectionKey.OP_READ);
                             NIOServerCnxn cnxn = createConnection(sc, sk);
-                            sk.attach(cnxn);
+                            sk.attach(cnxn);//设置NIOServerCnxn
                             addCnxn(cnxn);
                         }
                     } else if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {
                         // 接收数据,这里会间歇性的接收到客户端ping
-                        NIOServerCnxn c = (NIOServerCnxn) k.attachment();
+                        NIOServerCnxn c = (NIOServerCnxn) k.attachment();//取出NIOServerCnxn
                         c.doIO(k);//网路传输
                     } else {
                         if (LOG.isDebugEnabled()) {

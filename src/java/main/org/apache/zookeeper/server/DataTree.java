@@ -404,7 +404,7 @@ public class DataTree {
                 HashSet<String> list = ephemerals.get(ephemeralOwner);
                 if (list == null) {
                     list = new HashSet<String>();
-                    ephemerals.put(ephemeralOwner, list);//存储临时节点
+                    ephemerals.put(ephemeralOwner, list);//ephemeralOwner是sessionid 存储临时节点
                 }
                 synchronized (list) {
                     list.add(path);
@@ -567,7 +567,7 @@ public class DataTree {
         synchronized (n) {
             n.copyStat(stat);
             if (watcher != null) {
-                dataWatches.addWatch(path, watcher);
+                dataWatches.addWatch(path, watcher); //把watch加入dataWatches
             }
             return n.data;
         }

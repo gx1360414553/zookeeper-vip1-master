@@ -652,7 +652,7 @@ public class ClientCnxn {
 
     private void finishPacket(Packet p) {
         if (p.watchRegistration != null) {
-//            设置对应path的Watch
+//            设置对应path的Watch  注册watch
             p.watchRegistration.register(p.replyHeader.getErr());
         }
 
@@ -861,7 +861,7 @@ public class ClientCnxn {
                             + Long.toHexString(sessionId) + ", packet:: " + packet);
                 }
             } finally {
-                // 处理packet 设置对应path的Watch
+                // 处理packet 设置对应path的Watch事件
                 finishPacket(packet);
             }
         }

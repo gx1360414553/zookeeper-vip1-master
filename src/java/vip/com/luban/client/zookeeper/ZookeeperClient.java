@@ -38,7 +38,6 @@ public class ZookeeperClient {
             }
         }, new Stat());
 
-
 //        System.out.println(new String(client.getData("/test", true, null))+"==========");
 
         // stat怎么用？stat代表的是节点信息，如果想获取出节点信息就可以
