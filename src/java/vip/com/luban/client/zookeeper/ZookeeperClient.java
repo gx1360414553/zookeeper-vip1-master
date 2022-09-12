@@ -26,7 +26,7 @@ public class ZookeeperClient {
         }, false);
 
 //        client.create("/luban", "lb".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-//        client.create("/luban", "lb".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        client.create("/luban", "lb".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 //        client.create("/luban2", "lb".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 //        client.create("/luban", "lb".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 
@@ -37,6 +37,8 @@ public class ZookeeperClient {
                 System.out.println("get绑定的watch");
             }
         }, new Stat());
+
+        client.setData("/luban","123".getBytes(), 2);
 
 //        System.out.println(new String(client.getData("/test", true, null))+"==========");
 

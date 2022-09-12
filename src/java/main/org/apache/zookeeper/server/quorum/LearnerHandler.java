@@ -587,7 +587,7 @@ public class LearnerHandler extends ZooKeeperThread {
             while (true) { //正常交互，处理learner的请求等
                 // 不停的从ia充获取从Learner发过来的QuorumPacket
                 qp = new QuorumPacket();
-                ia.readRecord(qp, "packet");
+                ia.readRecord(qp, "packet");//follower挂掉 这里会抛异常
 
                 long traceMask = ZooTrace.SERVER_PACKET_TRACE_MASK;
                 if (qp.getType() == Leader.PING) {

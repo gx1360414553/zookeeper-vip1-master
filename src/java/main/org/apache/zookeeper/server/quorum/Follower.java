@@ -90,7 +90,7 @@ public class Follower extends Learner{
                 QuorumPacket qp = new QuorumPacket();
                 while (this.isRunning()) {
                     // 如果超过socket的超时时间，没有读到数据(包括ping和其他类型的请求)，那么则抛异常，从而关闭socket，自杀 成为LOOKING状态
-                    readPacket(qp);
+                    readPacket(qp);//leader挂掉这里会抛异常
                     processPacket(qp);
                 }
             } catch (Exception e) {

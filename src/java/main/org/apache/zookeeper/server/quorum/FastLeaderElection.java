@@ -498,8 +498,8 @@ public class FastLeaderElection implements Election {
 
     QuorumPeer self;
     Messenger messenger;
-    AtomicLong logicalclock = new AtomicLong(); /* Election instance */
-    long proposedLeader; //此轮选举投票次数
+    AtomicLong logicalclock = new AtomicLong(); /* Election instance *///领导选举次数
+    long proposedLeader;
     long proposedZxid;
     long proposedEpoch;
 

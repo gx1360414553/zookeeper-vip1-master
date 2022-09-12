@@ -144,7 +144,7 @@ public class QuorumPeerMain {
           // ServerCnxn表示一个接收到的客户端连接， ServerCnxnFactory表示连接工厂
           ServerCnxnFactory cnxnFactory = ServerCnxnFactory.createFactory();
           cnxnFactory.configure(config.getClientPortAddress(),
-                                config.getMaxClientCnxns());
+                                config.getMaxClientCnxns());//创建socket连接
 
           // QuorumPeer表示集群中的本服务器
           quorumPeer = getQuorumPeer();

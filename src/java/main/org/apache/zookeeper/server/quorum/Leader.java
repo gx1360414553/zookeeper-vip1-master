@@ -980,7 +980,7 @@ public class Leader {
                 + " ]; starting up and setting last processed zxid: 0x{}",
                 Long.toHexString(zk.getZxid()));
         // 启动服务器
-        zk.startup();
+        zk.startup();//LeaderZooKeeperServer
         /*
          * Update the election vote here to ensure that all members of the
          * ensemble report the same vote to new servers that start up and

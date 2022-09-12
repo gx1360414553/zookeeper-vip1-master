@@ -116,7 +116,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
     public void start() {
         // ensure thread is started once and only once
         if (thread.getState() == Thread.State.NEW) {
-            thread.start(); //执行的是此类中的run方法
+            thread.start(); //执行的是此NIOServerCnxnFactory类中的run方法
         }
     }
 
